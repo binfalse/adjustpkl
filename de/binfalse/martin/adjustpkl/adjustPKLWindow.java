@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.text.NumberFormat;
 import java.util.Vector;
 
 import javax.swing.JFileChooser;
@@ -71,7 +72,7 @@ public class adjustPKLWindow extends javax.swing.JFrame
 				options[0] = CHOOSER_STRING;
 				for (int i = 0; i < options.length - 1; i++)
 				{
-					options[i + 1] = "" + i + "-" + spectra.get (i).getMoleculeMass ();
+					options[i + 1] = "" + i + "-" + spectra.get (i).getOrgMoleculeMass ();
 				}
 				jComboBoxSpectrumChooser.setModel (new javax.swing.DefaultComboBoxModel (options));
 				jMenuItemAdjustAll.setEnabled (true);
@@ -85,6 +86,74 @@ public class adjustPKLWindow extends javax.swing.JFrame
 	private void savePKL ()
 	{
 		if (spectra == null || spectra.size () < 1) return;
+		
+		javax.swing.JPanel p = new javax.swing.JPanel ();
+		javax.swing.GroupLayout layout = new javax.swing.GroupLayout(p);
+		p.setLayout(layout);
+		javax.swing.JLabel top = new javax.swing.JLabel ("Round to (num. of decimal points)");
+		javax.swing.JLabel labelRoundMZ = new javax.swing.JLabel ("m/z values:");
+		javax.swing.JTextField fieldRoundMZ = new javax.swing.JTextField ("4");
+		fieldRoundMZ.setHorizontalAlignment (javax.swing.JTextField.RIGHT);
+		javax.swing.JLabel labelRoundIntense = new javax.swing.JLabel ("intensities:");
+		javax.swing.JTextField fieldRoundIntense = new javax.swing.JTextField ("4");
+		fieldRoundIntense.setHorizontalAlignment (javax.swing.JTextField.RIGHT);
+		layout.setHorizontalGroup(
+				layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+				.addGroup(layout.createSequentialGroup()
+						.addContainerGap()
+						.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+								.addComponent(top, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+								.addGroup(layout.createSequentialGroup()
+										.addComponent(labelRoundMZ)
+										.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+										.addComponent(fieldRoundMZ, javax.swing.GroupLayout.PREFERRED_SIZE, 100, Short.MAX_VALUE)
+								)
+								.addGroup(layout.createSequentialGroup()
+										.addComponent(labelRoundIntense)
+										.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+										.addComponent(fieldRoundIntense, javax.swing.GroupLayout.PREFERRED_SIZE, 100, Short.MAX_VALUE)
+								)
+						)
+						.addContainerGap()
+				)
+		);
+		layout.setVerticalGroup(
+				layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+				.addGroup(layout.createSequentialGroup()
+						.addContainerGap()
+						.addComponent(top)
+						.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+						.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+								.addComponent(labelRoundMZ)
+								.addComponent(fieldRoundMZ)
+						)
+						.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+								.addComponent(labelRoundIntense)
+								.addComponent(fieldRoundIntense)
+						)
+				)
+		);
+		
+		if (JOptionPane.showConfirmDialog (this, p, "Save options", JOptionPane.PLAIN_MESSAGE) < 0) return;
+		int roundMZ = -1, roundIntense = -1;
+		try
+		{
+			roundMZ = Integer.parseInt (fieldRoundMZ.getText ());
+			roundIntense = Integer.parseInt (fieldRoundIntense.getText ());
+			if (roundMZ < 0 || roundIntense < 0) throw new NumberFormatException ();
+		}
+		catch (NumberFormatException e)
+		{
+			e.printStackTrace ();
+			JOptionPane.showMessageDialog (this, "Both values must be non-negative integers!", "Error", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
+		double dRoundMZ = Math.pow (10, roundMZ), dRoundIntense = Math.pow (10, roundIntense);
+		NumberFormat numForm= NumberFormat.getInstance();
+		numForm.setGroupingUsed(false);
+		numForm.setMaximumFractionDigits (20);
+		
 		JFileChooser fc = new JFileChooser(".");
 		if (file == null) fc.setSelectedFile (new File ("adjusted_" + new java.text.SimpleDateFormat( "yyyy-MM-dd_HH-mm" ).format (new java.util.Date()) + ".pkl"));
 		else
@@ -110,14 +179,14 @@ public class adjustPKLWindow extends javax.swing.JFrame
 		{
 			File file = fc.getSelectedFile();
 			System.out.println ("saving: " + file.getAbsolutePath ());
-			if (!PKLIO.writePKL (spectra, file))
+			if (!PKLIO.writePKL (spectra, file, dRoundMZ, dRoundIntense, numForm))
 				JOptionPane.showMessageDialog (this, "Failed to write File!!", "Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 	private void adjustAll ()
 	{
 		if (spectra == null) return;
-		String s = (String)JOptionPane.showInputDialog(this, "Adjust by", "Adjust all Spectra", JOptionPane.PLAIN_MESSAGE);
+		String s = (String)JOptionPane.showInputDialog(this, "Adjust by (ppm)", "Adjust all Spectra", JOptionPane.PLAIN_MESSAGE);
 		double add = 0;
 		try
 		{
@@ -197,6 +266,7 @@ public class adjustPKLWindow extends javax.swing.JFrame
 		jLabelSpectrumChooser = new javax.swing.JLabel ();
 		jComboBoxSpectrumChooser = new javax.swing.JComboBox ();
 		jLabelAdjuster = new javax.swing.JLabel ();
+		jLabelAdjusterUnits = new javax.swing.JLabel ();
 		link = new Link ();
 		jTextFieldAdjuster = new javax.swing.JTextField ();
 		jButtonAdjust = new javax.swing.JButton ();
@@ -226,6 +296,7 @@ public class adjustPKLWindow extends javax.swing.JFrame
 		});
 		
 		jLabelAdjuster.setText ("adjust by:");
+		jLabelAdjusterUnits.setText ("ppm");
 		
 		jTextFieldAdjuster.setText (CHOOSER_FIELD_STRING);
 		jTextFieldAdjuster.addActionListener (new java.awt.event.ActionListener ()
@@ -328,6 +399,8 @@ public class adjustPKLWindow extends javax.swing.JFrame
 										.addComponent(jLabelAdjuster)
 										.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
 										.addComponent(jTextFieldAdjuster, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+										.addGap (1, 1, 1)
+										.addComponent(jLabelAdjusterUnits)
 										.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
 										.addComponent(jButtonAdjust)
 										.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 15, Short.MAX_VALUE)
@@ -346,6 +419,7 @@ public class adjustPKLWindow extends javax.swing.JFrame
 								.addComponent(jLabelSpectrumChooser)
 								.addComponent(jLabelAdjuster)
 								.addComponent(jTextFieldAdjuster, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+								.addComponent(jLabelAdjusterUnits)
 								.addComponent(jButtonAdjust)
 								.addComponent(link)
 						)
@@ -360,6 +434,7 @@ public class adjustPKLWindow extends javax.swing.JFrame
 	private javax.swing.JComboBox jComboBoxSpectrumChooser;
 	private javax.swing.JLabel jLabelSpectrumChooser;
 	private javax.swing.JLabel jLabelAdjuster;
+	private javax.swing.JLabel jLabelAdjusterUnits;
 	private Link link;
 	private javax.swing.JMenu jMenu;
 	private javax.swing.JMenuBar jMenuBar1;

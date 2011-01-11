@@ -1,6 +1,8 @@
 
 package de.binfalse.martin.adjustpkl.objects;
 
+import java.text.NumberFormat;
+
 /**
  * @author Martin Scharm
  * visit http://binfalse.de
@@ -37,7 +39,13 @@ public class Peak
 	}
 	public void adjustMass (double add)
 	{
-		this.mass += add;
+		double adjust = mass * add / 1000000;
+		mass += adjust;
+	}
+	
+	public String getOutput (double dRoundMZ, double dRoundIntense, NumberFormat numForm)
+	{
+		return numForm.format (Math.round (mass * dRoundMZ) / dRoundMZ) + " " + numForm.format (Math.round (intensity * dRoundIntense) / dRoundIntense);
 	}
 	
 	public String toString ()

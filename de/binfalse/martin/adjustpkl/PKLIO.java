@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.util.Vector;
 
 import de.binfalse.martin.adjustpkl.objects.MassSpectrum;
@@ -36,7 +37,7 @@ public class PKLIO
 				String [] tokens = strLine.split ("\\s");
 				if (tokens.length == 3)
 				{
-					ms.setMoleculeMass (Double.parseDouble (tokens[0]));
+					ms.setOrgMoleculeMass (Double.parseDouble (tokens[0]));
 					ms.setFiktIntensity (Double.parseDouble (tokens[1]));
 					ms.setCharge (Integer.parseInt (tokens[2]));
 				}
@@ -50,6 +51,7 @@ public class PKLIO
 					return null;
 				}
 	    }
+			if (!ms.empty ()) spectra.add (ms);
 			br.close ();
 		}
 		catch (IOException e)
@@ -65,14 +67,14 @@ public class PKLIO
 		return spectra;
 	}
 	
-	public static boolean writePKL (Vector<MassSpectrum> spectra, File f)
+	public static boolean writePKL (Vector<MassSpectrum> spectra, File f, double dRoundMZ, double dRoundIntense, NumberFormat numForm)
 	{
 		try
 		{
 			BufferedWriter bw = new BufferedWriter (new FileWriter (f));
 			for (int i = 0; i < spectra.size (); i++)
 			{
-				bw.write (spectra.elementAt (i).toString ());
+				bw.write (spectra.elementAt (i).getOutput (dRoundMZ, dRoundIntense, numForm));
 				bw.newLine ();
 				bw.flush ();
 			}

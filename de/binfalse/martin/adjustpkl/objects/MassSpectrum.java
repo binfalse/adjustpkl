@@ -1,6 +1,7 @@
 
 package de.binfalse.martin.adjustpkl.objects;
 
+import java.text.NumberFormat;
 import java.util.Vector;
 
 /**
@@ -13,6 +14,7 @@ public class MassSpectrum
 	private double minMass, maxMass;
 	private double minIntensity, maxIntensity;
 	private double moleculeMass;
+	private double orgMoleculeMass;
 	private double fiktIntensity;
 	private int charge;
 	private boolean empty;
@@ -20,7 +22,7 @@ public class MassSpectrum
 	public MassSpectrum ()
 	{
 		peaks = new Vector<Peak> ();
-		moleculeMass = fiktIntensity = charge = 0;
+		orgMoleculeMass = moleculeMass = fiktIntensity = charge = 0;
 		minMass = minIntensity = Double.POSITIVE_INFINITY;
 		maxMass = maxIntensity = Double.NEGATIVE_INFINITY;
 		empty = true;
@@ -29,7 +31,7 @@ public class MassSpectrum
 	public MassSpectrum (Vector<Peak> peaks)
 	{
 		this.peaks = peaks;
-		moleculeMass = fiktIntensity = charge = 0;
+		orgMoleculeMass = moleculeMass = fiktIntensity = charge = 0;
 		minMass = minIntensity = Double.POSITIVE_INFINITY;
 		maxMass = maxIntensity = Double.NEGATIVE_INFINITY;
 		if (peaks.size () > 0)
@@ -95,6 +97,18 @@ public class MassSpectrum
 		return moleculeMass;
 	}
 
+	public double getOrgMoleculeMass ()
+	{
+		return orgMoleculeMass;
+	}
+
+	public void setOrgMoleculeMass (double moleculeIntensity)
+	{
+		this.moleculeMass = moleculeIntensity;
+		this.orgMoleculeMass = moleculeIntensity;
+		empty = false;
+	}
+
 	public void setMoleculeMass (double moleculeIntensity)
 	{
 		this.moleculeMass = moleculeIntensity;
@@ -135,10 +149,20 @@ public class MassSpectrum
 	
 	public void adjust (double add)
 	{
-		minMass += add;
-		maxMass += add;
+		minMass = Double.POSITIVE_INFINITY;
+		maxMass = Double.NEGATIVE_INFINITY;
 		for (int i = 0; i < peaks.size (); i++)
+		{
 			peaks.elementAt (i).adjustMass (add);
+			if (peaks.elementAt (i).getMass () < minMass) minMass = peaks.elementAt (i).getMass ();
+			if (peaks.elementAt (i).getMass () > maxMass) maxMass = peaks.elementAt (i).getMass ();
+		}
+		double adjust = moleculeMass * add / 1000000;
+		moleculeMass += adjust;
+
+		if (moleculeMass < minMass) minMass = moleculeMass;
+		if (moleculeMass > maxMass) maxMass = moleculeMass;
+		
 	}
 	
 	public boolean empty ()
@@ -146,11 +170,19 @@ public class MassSpectrum
 		return empty;
 	}
 	
+	public String getOutput (double dRoundMZ, double dRoundIntense, NumberFormat numForm)
+	{
+		String s = numForm.format (Math.round (moleculeMass * dRoundMZ) / dRoundMZ) + " " + numForm.format (Math.round (fiktIntensity * dRoundIntense) / dRoundIntense) + " " + charge + System.getProperty("line.separator");
+		for (int i = 0; i < peaks.size (); i++)
+			s += peaks.elementAt (i).getOutput (dRoundMZ, dRoundIntense, numForm) + System.getProperty("line.separator");
+		return s;
+	}
+	
 	public String toString ()
 	{
-		String s = moleculeMass + " " + fiktIntensity + " " + charge + "\n";
+		String s = moleculeMass + " " + fiktIntensity + " " + charge + System.getProperty("line.separator");
 		for (int i = 0; i < peaks.size (); i++)
-			s += peaks.elementAt (i) + "\n";
+			s += peaks.elementAt (i) + System.getProperty("line.separator");
 		return s;
 	}
 }
