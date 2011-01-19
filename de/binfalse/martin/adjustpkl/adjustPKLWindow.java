@@ -6,6 +6,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.Vector;
 
 import javax.swing.JFileChooser;
@@ -90,8 +91,8 @@ public class adjustPKLWindow extends javax.swing.JFrame
 		javax.swing.JPanel p = new javax.swing.JPanel ();
 		javax.swing.GroupLayout layout = new javax.swing.GroupLayout(p);
 		p.setLayout(layout);
-		javax.swing.JLabel top = new javax.swing.JLabel ("Round to (num. of decimal points)");
-		javax.swing.JLabel labelRoundMZ = new javax.swing.JLabel ("m/z values:");
+		javax.swing.JLabel top = new javax.swing.JLabel ("Round to (No. of decimal places)");
+		javax.swing.JLabel labelRoundMZ = new javax.swing.JLabel ("<html><I>m/z</I> values:</html>");
 		javax.swing.JTextField fieldRoundMZ = new javax.swing.JTextField ("4");
 		fieldRoundMZ.setHorizontalAlignment (javax.swing.JTextField.RIGHT);
 		javax.swing.JLabel labelRoundIntense = new javax.swing.JLabel ("intensities:");
@@ -150,7 +151,7 @@ public class adjustPKLWindow extends javax.swing.JFrame
 		}
 
 		double dRoundMZ = Math.pow (10, roundMZ), dRoundIntense = Math.pow (10, roundIntense);
-		NumberFormat numForm= NumberFormat.getInstance();
+		NumberFormat numForm= NumberFormat.getInstance(Locale.US);
 		numForm.setGroupingUsed(false);
 		numForm.setMaximumFractionDigits (20);
 		
@@ -187,6 +188,7 @@ public class adjustPKLWindow extends javax.swing.JFrame
 	{
 		if (spectra == null) return;
 		String s = (String)JOptionPane.showInputDialog(this, "Adjust by (ppm)", "Adjust all Spectra", JOptionPane.PLAIN_MESSAGE);
+		if (s == null) return;
 		double add = 0;
 		try
 		{
