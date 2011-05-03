@@ -7,6 +7,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Vector;
 
 /**
@@ -80,23 +82,24 @@ public class SpectrumViewer extends javax.swing.JPanel
 		Font f = new Font("SansSerif", Font.PLAIN, 10);
 		g2.setFont (f);
 		FontMetrics fm = g2.getFontMetrics(f);
+		NumberFormat nf = new DecimalFormat("0.0E0");
 		
-		text = "" + maxIntense;
+		text = "" + nf.format (maxIntense);
 		rect = fm.getStringBounds (text, g2);
 		g2.drawLine ((int) originX, (int) endY, (int) originX - 5, (int) endY);
 		g2.drawString (text, (int) (originX - 10 - rect.getWidth ()), (int) (endY + rect.getHeight () / 2));
 		
-		text = "" + (maxIntense * 3 / 4);
+		text = "" + nf.format (maxIntense * 3 / 4);
 		rect = fm.getStringBounds (text, g2);
 		g2.drawLine ((int) originX, (int) (endY + (startY - endY) / 4), (int) originX - 5, (int) (endY + (startY - endY) / 4));
 		g2.drawString (text, (int) (originX - 10 - rect.getWidth ()), (int) (endY + (startY - endY) / 4 + rect.getHeight () / 2));
 		
-		text = "" + (maxIntense / 2);
+		text = "" + nf.format (maxIntense / 2);
 		rect = fm.getStringBounds (text, g2);
 		g2.drawLine ((int) originX, (int) (endY + (startY - endY) / 2), (int) originX - 5, (int) (endY + (startY - endY) / 2));
 		g2.drawString (text, (int) (originX - 10 - rect.getWidth ()), (int) (endY + (startY - endY) / 2 + rect.getHeight () / 2));
 		
-		text = "" + (maxIntense / 4);
+		text = "" + nf.format (maxIntense / 4);
 		rect = fm.getStringBounds (text, g2);
 		g2.drawLine ((int) originX, (int) (endY + (startY - endY) * 3 / 4), (int) originX - 5, (int) (endY + (startY - endY) * 3 / 4));
 		g2.drawString (text, (int) (originX - 10 - rect.getWidth ()), (int) (endY + (startY - endY) * 3 / 4 + rect.getHeight () / 2));
